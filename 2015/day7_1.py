@@ -45,10 +45,8 @@ def calculate_signal(wires, circuits):
             wires[k] = [v[0], True] 
             
     if loop:
-        calculate_signal(wires, circuits) 
-
-    #for item in circuits:
-        #print(item)    
+        calculate_signal(wires, circuits)    
+        
 
 def create_datatset():
     with open(os.path.dirname(os.path.realpath(__file__)) + "/day7.txt") as f:
@@ -116,21 +114,13 @@ def create_datatset():
                 wires[out] = [out_signal, False]
             else:
                 if out_signal != None:
-                    wires[out] = [out_signal, False]
-
-    #for item in circuits:
-        #print(item)   
-    
+                    wires[out] = [out_signal, False]  
 
     calculate_signal(wires, circuits)
 
     for k, v in wires.items():
         if v[0] != None:
-            print(k, v)
-
-    #for item in circuits:
-        #print(item)   
-
+            print(k, v) 
 
 if __name__ == "__main__":
     create_datatset()
