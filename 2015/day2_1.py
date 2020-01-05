@@ -4,7 +4,7 @@ def calculate_sqft():
     with open(os.path.dirname(os.path.realpath(__file__)) + "/day2.txt") as f:
         data = f.read().splitlines()    
     
-    total_sqft = 0
+    total_area = 0
 
     for line in data:
         sides = line.split('x')
@@ -16,36 +16,19 @@ def calculate_sqft():
         area2 = w * h
         area3 = h * l
 
-        sqft = 2 * (area1 + area2 + area2)
+        small_area = area1
 
-        if area1 == area2:
-            if area1 < area3:
-                sqft = sqft + area1
-            else:
-                sqft = sqft + area3
-        elif area1 == area3:
-            if area1 < area2:
-                sqft = sqft + area1
-            else:
-                sqft = sqft + area2
-        elif area2 == area3:
-            if area2 < area1:
-                sqft = sqft + area2
-            else:
-                sqft = sqft + area1
-        elif area1 == area2 and area1 == area3:
-            sqft = sqft + area1
-        else:
-            if area1 < area2 and area1 < area3:
-                sqft = sqft + area1
-            elif area2 < area1 and area2 < area3:
-                sqft = sqft + area2
-            elif area3 < area1 and area3 < area2:  
-                sqft = sqft + area3        
+        if area2 < small_area:
+            small_area = area2
 
-        total_sqft = total_sqft + sqft   
+        if area3 < small_area:
+            small_area = area3        
 
-    print(total_sqft)    
+        sqft = 2 * (area1 + area2 + area3) + small_area               
+
+        total_area = total_area + sqft   
+
+    print(total_area)    
 
 if __name__ == "__main__":
     calculate_sqft()
