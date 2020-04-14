@@ -1,126 +1,86 @@
 import os
 
-def calculate_signal(wires, circuits):  
-    loop = False  
-    for k, v in wires.items():
-        if v[0] != None and v[1] != True:
-            loop = True
-            for item in circuits:
-                if item[7] == "&" or item[7] == "|":
-                    if item[0] == k:
-                        item[3] = v[0]
-                        if item[4] != None:
-                            if item[7] == "&":
-                                item[5] = int(item[3]) & int(item[4])
-                            else:
-                                item[5] = int(item[3]) | int(item[4])
-
-                            wires[item[2]] = [str(item[5]), False]
-                    elif item[1] == k:
-                        item[4] = v[0]
-                        if item[3] != None:
-                            if item[7] == "&":
-                                item[5] = int(item[3]) & int(item[4])
-                            else:
-                                item[5] = int(item[3]) | int(item[4])
-
-                            wires[item[2]] = [str(item[5]), False]
-                    
-                elif item[7] == ">>":
-                    if item[0] == k:
-                        item[3] = v[0]
-                        item[5] = int(v[0]) >> int(item[6])
-                        wires[item[2]] = [str(item[5]), False]
-                elif item[7] == "<<":
-                    if item[0] == k:
-                        item[3] = v[0]
-                        item[5] = int(v[0]) << int(item[6])
-                        wires[item[2]] = [str(item[5]), False]
-                elif item[7] == "~":
-                    if item[0] == k:
-                        item[3] = v[0]
-                        item[5] = ~ int(v[0])
-                        wires[item[2]] = [str(item[5]), False]
-
-            wires[k] = [v[0], True] 
-            
-    if loop:
-        calculate_signal(wires, circuits)    
-        
-
-def create_datatset():
+def wiring():
     with open(os.path.dirname(os.path.realpath(__file__)) + "/day7.txt") as f:
-        data = f.read().splitlines()
-   
-    wires = {}
-    circuits = []
+        data = f.read().splitlines()        
+        
+    wires = {} 
+    
     for line in data:
-        in_1 = None
-        in_2 = None
-        out = ""
-        in1_signal = None
-        gate = ""
-        out_signal = None
-        shifter = None
+        temp = line
+        temp = temp.replace(' -> ', ',')
+        temp = temp.replace(' AND ', ',')
+        temp = temp.replace(' OR ', ',')
+        temp = temp.replace(' LSHIFT ', ',')
+        temp = temp.replace(' RSHIFT ', ',')
+        temp = temp.replace('NOT ', '')
 
-        if line.find("AND") > -1:   
-            in_1 = line[0:line.find(" AND")]
-            if in_1 == "1":
-                in_1 = None
-                in1_signal = 1
-            in_2 = line[line.find(" AND") + 5:line.find(" ->")]
-            gate = "&"     
-        elif line.find("OR") > -1:
-            in_1 = line[0:line.find(" OR")]
-            in_2 = line[line.find(" OR") + 4:line.find(" ->")]
-            gate = "|"  
-        elif line.find("LSHIFT") > -1:
-            in_1 = line[0:line.find("SHIFT") - 2]
-            shifter = line[line.find("SHIFT") + 6:line.find(" ->")]
-            gate = "<<"  
-        elif line.find("RSHIFT") > -1:
-            in_1 = line[0:line.find("SHIFT") - 2]
-            shifter = line[line.find("SHIFT") + 6:line.find(" ->")]
-            gate = ">>"     
-        elif line.find("NOT") > -1:   
-            in_1 = line[line.find("NOT") + 4:line.find(" ->")]
-            gate = "~"   
+        data = temp.split(',')
+        in1 = data[0]
+
+        if len(data) == 3:   
+            in2 = data[1]
+            out = data[2]
         else:
-            gate = "="
-            if line.find("a") > -1:
-                in_1 = line[0:line.find(" ->")]   
+            out = data[1]
+
+        if 'AND' in line:
+            wires[out] = ['&', in1, in2, '']
+        elif 'OR' in line:      
+            wires[out] = ['|', in1, in2, '']
+        elif 'LSHIFT' in line:            
+            wires[out] = ['<<', in1, in2, '']
+        elif 'RSHIFT' in line:            
+            wires[out] = ['>>', in1, in2, '']
+        elif 'NOT' in line:            
+            wires[out] = ['^', in1, '', '']
+        else:           
+            if in1.isdigit():                
+                wires[out] = ['=', '', '', in1]
             else:
-                out_signal = line[0:line.find(" ->")]
+                wires[out] = ['=', in1, '', '']           
+        
+    #for k, v in wires.items():
+    #    print(k, v)    
+    return wires
 
-        out = line[line.find("->") + 3:]
-        circuits.append([in_1, in_2, out, in1_signal, None, out_signal, shifter, gate])  
+def check_complete(wires):
+    for line in wires.values():
+        if line[3] == '':
+            return False    
+    return True
 
-        if in_1 != None:
-            if in_1 not in wires:
-                wires[in_1] = [out_signal, False]
-            else:
-                if out_signal != None:
-                    wires[in_1] = [out_signal, False]
+def calcuate_signal(wires):
+    if check_complete(wires):
+        return True        
+    else:
+        for k, v in wires.items():            
+            if v[3] != '':
+                for values in wires.values():
+                    if values[1] == k or values[2] == k:
+                        if values[1] == k:
+                            values[1] = v[3]
+                        elif values[2] == k:
+                            values[2] = v[3]  
 
-        if in_2 != None:
-            if in_2 not in wires:
-                wires[in_2] = [out_signal, False]
-            else:
-                if out_signal != None:
-                    wires[in_2] = [out_signal, False]
+                        if values[1].isdigit() and values[2].isdigit():
+                            if values[0] == '&':
+                                values[3] = str(int(values[1]) & int(values[2]))
+                            elif values[0] == '|': 
+                                values[3] = str(int(values[1]) | int(values[2]))
+                            elif values[0] == '>>':
+                                values[3] = str(int(values[1]) >> int(values[2]))
+                            elif values[0] == '<<':
+                                values[3] = str(int(values[1]) << int(values[2]))
+                        elif values[1].isdigit():  
+                            if values[0] == '^':
+                                values[3] = str(int(values[1]) ^ 65535)
+                            elif values[0] == '=':
+                                values[3] = str(values[1])
 
-        if out != None:
-            if out not in wires:
-                wires[out] = [out_signal, False]
-            else:
-                if out_signal != None:
-                    wires[out] = [out_signal, False]  
-
-    calculate_signal(wires, circuits)
-
-    for k, v in wires.items():
-        if v[0] != None:
-            print(k, v) 
+        calcuate_signal(wires)        
 
 if __name__ == "__main__":
-    create_datatset()
+    wires = wiring()
+    calcuate_signal(wires)    
+    print('a = ' + wires['a'][3])
