@@ -1,2 +1,2 @@
 # Adventofcode
-Advent of code hands on.
+Advent of code.
