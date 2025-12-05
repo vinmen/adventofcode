@@ -27,17 +27,28 @@ def solve():
     total = 0
     rows = len(data)
     cols = len(data[0])
+    loop = True
 
-    for i in range(0, rows):
-        for j in range(0, cols):
-            if data[i][j] == '@':
-                local_count  = 0      
-                neighbors = get_neigbors(i, j, rows - 1, cols - 1)      
-                for n in neighbors:
-                    if data[n[0]][n[1]] == '@':
-                        local_count += 1
-                if local_count < 4:
-                    total += 1             
+    while loop:
+        local_total = 0
+
+        for i in range(0, rows):
+            for j in range(0, cols):
+                if data[i][j] == '@':
+                    local_count  = 0      
+                    neighbors = get_neigbors(i, j, rows - 1, cols - 1)      
+                    for n in neighbors:
+                        if data[n[0]][n[1]] == '@':
+                            local_count += 1
+                    if local_count < 4:
+                        temp = list(data[i])
+                        temp[j] = '.'
+                        data[i] = "".join(temp)
+                        local_total += 1
+        
+        total = total + local_total
+        if local_total == 0:
+            loop = False            
             
     return total   
 
