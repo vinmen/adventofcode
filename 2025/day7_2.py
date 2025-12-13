@@ -12,7 +12,8 @@ def paths(node:Node):
         paths(node.left)
         paths(node.right)
     else:
-        return count += 1        
+        count += 1
+        return count    
 
 def build_tree(grid, row, col):
     if row == len(grid):
